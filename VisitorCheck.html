@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Display</title>
+    <script>
+        // Function to send data to Discord webhook
+        function sendToDiscord(ipv4, ipv6, username, time) {
+            const webhookUrl = 'your discord webhook'; //your discord web hook
+            const payload = {
+                content: `\`\`\`Visitor's Information:\nIPv4: ${ipv4}\nIPv6: ${ipv6}\nUsername: ${username}\nTime: ${time}\`\`\``
+            };
+
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    console.error('Error sending data to Discord:', response.status, response.statusText);
+                } else {
+                    console.log('Data sent to Discord successfully');
+                }
+            })
+            .catch(error => {
+                console.error('Error sending data to Discord:', error);
+            });
+        }
+
+        function getVisitorDetails() {
+            console.log('Fetching visitor details...');
+            
+            // Execute your code here
+            fetch('https://api4.ipify.org/?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    const ipv4 = data.ip;
+                    console.log('Fetched IPv4 address:', ipv4);
+
+                    fetch('https://api6.ipify.org/?format=json')
+                        .then(response => response.json())
+                        .then(data => {
+                            const ipv6 = data.ip;
+                            console.log('Fetched IPv6 address:', ipv6);
+
+                            // Prompt user for username after obtaining IP
+                            const username = ('Visitor');
+
+                            const options = { timeZone: 'Asia/Bangkok' };
+                            const time = new Date().toLocaleString('en-US', options);
+                            console.log('Fetched time:', time);
+
+                            document.getElementById('ipv4Address').innerText = ipv4;
+                            document.getElementById('ipv6Address').innerText = ipv6;
+
+                            sendToDiscord(ipv4, ipv6, username, time);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching IPv6 address:', error);
+                        });
+                })
+                .catch(error => {
+                    console.error('Error fetching IPv4 address:', error);
+                });
+        }
+
+        window.onload = getVisitorDetails;
+    </script>
+</head>
+
+<body>
+    <h1>Your IP Addresses:</h1>
+    <p>IPv4: <span id="ipv4Address">Loading...</span></p>
+    <p>IPv6: <span id="ipv6Address">Loading...</span></p>
+</body>
+
+</html>
